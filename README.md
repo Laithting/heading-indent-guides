@@ -51,3 +51,15 @@ heading-indent: false
 --hli-color: var(--text-faint);                /* 線的顏色，例如改成 var(--text-muted) 會更明顯 */
 --hli-w: var(--indentation-guide-width, 1px);  /* 線的粗細 */
 ```
+
+## 發布新版本（維護者）
+
+1. 把 `manifest.json` 的 `version` 往上加，例如 `1.0.2`。
+2. commit 並推上 GitHub，然後推一個同名的 tag：
+
+   ```bash
+   git tag 1.0.2
+   git push origin main 1.0.2
+   ```
+
+3. GitHub Actions 會自動建立 Release、附上 `main.js`、`manifest.json`、`styles.css`，並產生來源證明（artifact attestation）。
