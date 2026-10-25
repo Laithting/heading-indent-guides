@@ -1,0 +1,10 @@
+{
+  "id": "heading-indent-guides",
+  "name": "Heading Indent Guides",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Indent content by heading level, draw vertical guide lines for each level, and make heading sizes easier to tell apart.",
+  "author": "Laithting",
+  "authorUrl": "https://github.com/Laithting",
+  "isDesktopOnly": false
+}

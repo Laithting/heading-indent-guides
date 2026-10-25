@@ -1,0 +1,112 @@
+/* ===== Heading Indent Guides =====
+   外掛會在每一行（即時預覽）或每一個區塊（閱讀模式）加上 hli-d1 ~ hli-d6，
+   代表要往右推幾層；--hli-1 ~ --hli-6 是各層的縮排，由外掛設定寫到 body 上。 */
+
+body {
+  --hli-1: 30px;
+  --hli-2: 50px;
+  --hli-3: 70px;
+  --hli-4: 90px;
+  --hli-5: 110px;
+  --hli-6: 130px;
+
+  --hli-gap: 12px;                                   /* 線離內文多遠 */
+  --hli-color: var(--text-faint);                    /* 線的顏色 */
+  --hli-w: var(--indentation-guide-width, 1px);      /* 線的粗細 */
+  --hli-line: linear-gradient(var(--hli-color), var(--hli-color));
+}
+
+/* 每一層的位移量，以及要畫哪幾條線 */
+.hli-d1 {
+  --hli-off: var(--hli-1);
+  --hli-bgs: var(--hli-line);
+  --hli-pos: calc(var(--hli-1) - var(--hli-gap)) 0;
+}
+.hli-d2 {
+  --hli-off: var(--hli-2);
+  --hli-bgs: var(--hli-line), var(--hli-line);
+  --hli-pos: calc(var(--hli-1) - var(--hli-gap)) 0, calc(var(--hli-2) - var(--hli-gap)) 0;
+}
+.hli-d3 {
+  --hli-off: var(--hli-3);
+  --hli-bgs: var(--hli-line), var(--hli-line), var(--hli-line);
+  --hli-pos: calc(var(--hli-1) - var(--hli-gap)) 0, calc(var(--hli-2) - var(--hli-gap)) 0,
+             calc(var(--hli-3) - var(--hli-gap)) 0;
+}
+.hli-d4 {
+  --hli-off: var(--hli-4);
+  --hli-bgs: var(--hli-line), var(--hli-line), var(--hli-line), var(--hli-line);
+  --hli-pos: calc(var(--hli-1) - var(--hli-gap)) 0, calc(var(--hli-2) - var(--hli-gap)) 0,
+             calc(var(--hli-3) - var(--hli-gap)) 0, calc(var(--hli-4) - var(--hli-gap)) 0;
+}
+.hli-d5 {
+  --hli-off: var(--hli-5);
+  --hli-bgs: var(--hli-line), var(--hli-line), var(--hli-line), var(--hli-line), var(--hli-line);
+  --hli-pos: calc(var(--hli-1) - var(--hli-gap)) 0, calc(var(--hli-2) - var(--hli-gap)) 0,
+             calc(var(--hli-3) - var(--hli-gap)) 0, calc(var(--hli-4) - var(--hli-gap)) 0,
+             calc(var(--hli-5) - var(--hli-gap)) 0;
+}
+.hli-d6 {
+  --hli-off: var(--hli-6);
+  --hli-bgs: var(--hli-line), var(--hli-line), var(--hli-line), var(--hli-line), var(--hli-line), var(--hli-line);
+  --hli-pos: calc(var(--hli-1) - var(--hli-gap)) 0, calc(var(--hli-2) - var(--hli-gap)) 0,
+             calc(var(--hli-3) - var(--hli-gap)) 0, calc(var(--hli-4) - var(--hli-gap)) 0,
+             calc(var(--hli-5) - var(--hli-gap)) 0, calc(var(--hli-6) - var(--hli-gap)) 0;
+}
+
+/* ----- 閱讀模式：區塊用 padding 縮排，線畫在區塊背景上 ----- */
+.markdown-rendered :is(.hli-d1, .hli-d2, .hli-d3, .hli-d4, .hli-d5, .hli-d6) {
+  padding-left: var(--hli-off);
+  display: flow-root; /* 把段落上下間距包進區塊，線才不會斷 */
+}
+.markdown-rendered .hli-data > :first-child {
+  margin-top: 0;
+}
+.hli-guides .markdown-rendered :is(.hli-d1, .hli-d2, .hli-d3, .hli-d4, .hli-d5, .hli-d6) {
+  background-image: var(--hli-bgs);
+  background-position: var(--hli-pos);
+  background-repeat: no-repeat;
+  background-size: var(--hli-w) 100%;
+}
+
+/* ----- 即時預覽：整行往右推，用 ::after 把線畫回左邊空白處 ----- */
+.markdown-source-view.mod-cm6 .cm-content > :is(.hli-d1, .hli-d2, .hli-d3, .hli-d4, .hli-d5, .hli-d6) {
+  position: relative;
+  left: var(--hli-off);
+  width: calc(100% - var(--hli-off));
+}
+.hli-guides .markdown-source-view.mod-cm6 .cm-content > :is(.hli-d1, .hli-d2, .hli-d3, .hli-d4, .hli-d5, .hli-d6)::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--hli-off));
+  width: var(--hli-off);
+  pointer-events: none;
+  background-image: var(--hli-bgs);
+  background-position: var(--hli-pos);
+  background-repeat: no-repeat;
+  background-size: var(--hli-w) 100%;
+}
+
+/* ----- 加大標題差異 ----- */
+body.hli-heading-style {
+  --h1-size: 2.1em;
+  --h2-size: 1.7em;
+  --h3-size: 1.4em;
+  --h4-size: 1.2em;
+  --h5-size: 1.05em;
+  --h6-size: 0.95em;
+
+  --h1-weight: 800;
+  --h2-weight: 750;
+  --h3-weight: 700;
+  --h4-weight: 650;
+  --h5-weight: 600;
+  --h6-weight: 600;
+}
+.hli-heading-style .markdown-rendered h1,
+.hli-heading-style .markdown-source-view.mod-cm6 .cm-line.HyperMD-header-1 {
+  border-bottom: 2px solid var(--background-modifier-border);
+  padding-bottom: 0.15em;
+}
