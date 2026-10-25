@@ -1,8 +1,40 @@
 'use strict';
 
-const { Plugin, PluginSettingTab, Setting } = require('obsidian');
+const obsidian = require('obsidian');
+const { Plugin, PluginSettingTab, Setting } = obsidian;
 const { ViewPlugin, Decoration } = require('@codemirror/view');
 const { RangeSetBuilder } = require('@codemirror/state');
+
+// 設定頁面文字：Obsidian 介面是繁體中文時顯示中文，其他語言顯示英文
+const STRINGS = {
+  en: {
+    guides: 'Vertical guide lines',
+    guidesDesc: 'Draw a vertical line to the left of the content under each heading level.',
+    headings: 'Clearer headings',
+    headingsDesc: 'Make heading sizes and weights more distinct, and underline H1.',
+    highest: 'Treat the highest heading as H1',
+    highestDesc: 'If a note only uses ## and below, ## becomes the first level, so nothing is indented by an extra step.',
+    indents: 'Indent per level (px)',
+    under: (n) => `Content under H${n}`,
+    perNote: 'To turn indentation off for one note, add heading-indent: false to its frontmatter.',
+  },
+  'zh-TW': {
+    guides: '垂直參考線',
+    guidesDesc: '在每一層標題底下的內文左邊畫直線。',
+    headings: '加大標題差異',
+    headingsDesc: '調大各級標題的字體大小和粗細，並在 H1 下方加底線。',
+    highest: '把最大的標題當成 H1',
+    highestDesc: '例如整篇筆記最大只用到 ##，就把 ## 當第一層，不會多縮一格。',
+    indents: '各層縮排（px）',
+    under: (n) => `H${n} 底下的內文`,
+    perNote: '單篇筆記想關掉縮排：在 frontmatter 加上 heading-indent: false。',
+  },
+};
+
+function strings() {
+  const lang = typeof obsidian.getLanguage === 'function' ? obsidian.getLanguage() : window.localStorage.getItem('language');
+  return STRINGS[lang] || STRINGS.en;
+}
 
 const DEFAULT_SETTINGS = {
   indents: [30, 50, 70, 90, 110, 130], // H1~H6 底下內文的縮排（px）
@@ -161,6 +193,7 @@ module.exports = class HeadingIndentGuides extends Plugin {
   async onload() {
     this.version = 0;
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    this.settings.indents = [...this.settings.indents];
     this.applySettings();
 
     this.registerEditorExtension(livePreviewExtension(this));
@@ -224,35 +257,36 @@ class HeadingIndentGuidesSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     const s = this.plugin.settings;
     containerEl.empty();
+    const str = strings();
 
     new Setting(containerEl)
-      .setName('垂直參考線')
-      .setDesc('在每一層標題底下的內文左邊畫直線。')
+      .setName(str.guides)
+      .setDesc(str.guidesDesc)
       .addToggle((t) => t.setValue(s.showGuides).onChange(async (v) => {
         s.showGuides = v;
         await this.plugin.saveAndApply();
       }));
 
     new Setting(containerEl)
-      .setName('加大標題差異')
-      .setDesc('調大各級標題的字體大小和粗細，並在 H1 下方加底線。')
+      .setName(str.headings)
+      .setDesc(str.headingsDesc)
       .addToggle((t) => t.setValue(s.styleHeadings).onChange(async (v) => {
         s.styleHeadings = v;
         await this.plugin.saveAndApply();
       }));
 
     new Setting(containerEl)
-      .setName('把最大的標題當成 H1')
-      .setDesc('例如整篇筆記最大只用到 ##，就把 ## 當第一層，不會多縮一格。')
+      .setName(str.highest)
+      .setDesc(str.highestDesc)
       .addToggle((t) => t.setValue(s.treatHighestAsH1).onChange(async (v) => {
         s.treatHighestAsH1 = v;
         await this.plugin.saveAndApply();
       }));
 
-    containerEl.createEl('h3', { text: '各層縮排（px）' });
+    new Setting(containerEl).setName(str.indents).setHeading();
     s.indents.forEach((px, i) => {
       new Setting(containerEl)
-        .setName(`H${i + 1} 底下的內文`)
+        .setName(str.under(i + 1))
         .addText((t) => t.setPlaceholder(String(DEFAULT_SETTINGS.indents[i])).setValue(String(px)).onChange(async (v) => {
           const n = parseInt(v, 10);
           if (Number.isNaN(n) || n < 0) return;
@@ -261,9 +295,6 @@ class HeadingIndentGuidesSettingTab extends PluginSettingTab {
         }));
     });
 
-    containerEl.createEl('p', {
-      text: '單篇筆記想關掉縮排：在 frontmatter 加上 heading-indent: false。',
-      cls: 'setting-item-description',
-    });
+    containerEl.createEl('p', { text: str.perNote, cls: 'setting-item-description' });
   }
 }

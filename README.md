@@ -1,40 +1,35 @@
 # Heading Indent Guides
 
-Indents the content under each heading by its level, draws a vertical guide line for every level, and makes heading sizes easier to tell apart. Works in both Live Preview and Reading view. Indents, guides, and heading styling can each be changed or turned off in the plugin settings; add `heading-indent: false` to a note's frontmatter to turn it off for that note.
+See the structure of long notes at a glance. Content under each heading is indented by its level, a vertical guide line runs down every level, and heading sizes are easier to tell apart.
 
----
-
-讓 Obsidian 的大標題、小標題一眼看得出層級：
-
-- 標題底下的內文依層級往右縮排
-- 每一層左邊畫一條垂直參考線
-- 加大各級標題的字體大小、粗細差異，H1 下方加底線
-
-即時預覽和閱讀模式都有效果。
-
-## 安裝
-
-1. 在 Obsidian 打開你的筆記庫資料夾，進入 `.obsidian/plugins/`。
-   - `.obsidian` 是隱藏資料夾。Windows 要在檔案總管勾選「檢視 → 顯示 → 隱藏的項目」才看得到。
-   - 沒有 `plugins` 資料夾就自己建一個。
-2. 建一個 `heading-indent-guides` 資料夾放進去，裡面要有 `manifest.json`、`main.js`、`styles.css` 三個檔案。
-3. 重新開啟 Obsidian。
-4. 設定 → 第三方外掛 → 關閉限制模式（如果有）→ 在「已安裝的外掛」裡打開 **Heading Indent Guides**。
-
-如果原本有裝 Heading Level Indent 外掛，請先關掉它，不然會重複縮排。
-
-## 設定
-
-設定 → 第三方外掛程式 → Heading Indent Guides：
-
-| 選項 | 說明 |
+| Without the plugin | With Heading Indent Guides |
 |---|---|
-| 垂直參考線 | 開關左邊的直線 |
-| 加大標題差異 | 開關標題大小、粗細和 H1 底線 |
-| 把最大的標題當成 H1 | 整篇最大只用到 `##` 時，把 `##` 當第一層 |
-| 各層縮排 | H1～H6 底下內文各往右推多少 px |
+| ![Without the plugin: headings and text are all aligned to the left](images/before.jpg) | ![With the plugin: content is indented by heading level with vertical guide lines](images/after.jpg) |
 
-單篇筆記不想縮排：在 frontmatter 加上
+## Features
+
+- **Indent by heading level**: text, lists, code blocks, tables, and callouts move right to match the heading they belong to.
+- **Vertical guide lines**: one thin line for each level, so you can see where a section starts and ends.
+- **Clearer headings**: larger size and weight differences between H1–H6, and an underline under H1.
+- Works in **Live Preview**, **Source mode**, **Reading view**, and **PDF export**, on desktop and mobile.
+
+## Installation
+
+1. Open **Settings → Community plugins** and turn off Restricted mode if it is on.
+2. Select **Browse**, search for **Heading Indent Guides**, then **Install** and **Enable**.
+
+If you also use *Heading Level Indent*, turn it off so content is not indented twice.
+
+## Settings
+
+| Setting | What it does |
+|---|---|
+| Vertical guide lines | Show or hide the guide lines. |
+| Clearer headings | Turn the larger heading sizes, weights, and H1 underline on or off. |
+| Treat the highest heading as H1 | If a note only uses `##` and below, `##` becomes the first level, so nothing is indented by an extra step. |
+| Indent per level | How far (in px) content under H1–H6 moves to the right. The guide lines follow automatically. |
+
+To turn indentation off for a single note, add this to its frontmatter:
 
 ```yaml
 ---
@@ -42,24 +37,32 @@ heading-indent: false
 ---
 ```
 
-## 想改線的顏色或粗細
+## Customizing the guide lines
 
-編輯 `styles.css` 最上面的這幾行，存檔後重新開啟 Obsidian：
+Create a CSS snippet (**Settings → Appearance → CSS snippets**) so your changes are kept when the plugin updates:
 
 ```css
---hli-gap: 12px;                               /* 線離內文多遠 */
---hli-color: var(--text-faint);                /* 線的顏色，例如改成 var(--text-muted) 會更明顯 */
---hli-w: var(--indentation-guide-width, 1px);  /* 線的粗細 */
+body.hli-guides {
+  --hli-color: var(--text-muted);  /* line color */
+  --hli-w: 2px;                    /* line width */
+  --hli-gap: 12px;                 /* distance between the line and the text */
+}
 ```
 
-## 發布新版本（維護者）
+---
 
-1. 把 `manifest.json` 的 `version` 往上加，例如 `1.0.2`。
-2. commit 並推上 GitHub，然後推一個同名的 tag：
+## 中文說明
 
-   ```bash
-   git tag 1.0.2
-   git push origin main 1.0.2
-   ```
+讓長筆記的層級一眼看清楚：標題底下的內容依層級往右縮排，每一層左邊有一條垂直參考線，各級標題的大小、粗細差異也更明顯。即時預覽、原始碼模式、閱讀模式和 PDF 匯出都有效果，電腦版和手機版都能用。
 
-3. GitHub Actions 會自動建立 Release、附上 `main.js`、`manifest.json`、`styles.css`，並產生來源證明（artifact attestation）。
+**安裝**：設定 → 第三方外掛 → 瀏覽 → 搜尋 **Heading Indent Guides** → 安裝 → 啟用。如果有裝 *Heading Level Indent*，請先關掉，不然會重複縮排。
+
+**設定**：可以開關垂直參考線、開關加大標題差異、選擇是否把筆記中最大的標題當成 H1，以及調整 H1～H6 底下內容的縮排距離，參考線會自動跟著移動。Obsidian 介面是中文時，設定頁面也會顯示中文。
+
+**單篇筆記關閉縮排**：在 frontmatter 加上 `heading-indent: false`。
+
+**自訂參考線**：到「設定 → 外觀 → CSS 片段」新增一個片段，貼上上面「Customizing the guide lines」的 CSS 再修改數值。不要直接改外掛的 `styles.css`，外掛更新時會被覆蓋。
+
+## License
+
+[MIT](LICENSE)
