@@ -69,24 +69,15 @@ body {
   background-size: var(--hli-w) 100%;
 }
 
-/* ----- 即時預覽：整行往右推，用 ::after 把線畫回左邊空白處 ----- */
+/* ----- 即時預覽：整行往右推，線由外掛畫在獨立圖層上 ----- */
 .markdown-source-view.mod-cm6 .cm-content > :is(.hli-d1, .hli-d2, .hli-d3, .hli-d4, .hli-d5, .hli-d6) {
   position: relative;
   left: var(--hli-off);
   width: calc(100% - var(--hli-off));
 }
-.hli-guides .markdown-source-view.mod-cm6 .cm-content > :is(.hli-d1, .hli-d2, .hli-d3, .hli-d4, .hli-d5, .hli-d6)::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(-1 * var(--hli-off));
-  width: var(--hli-off);
+.hli-guide-layer .hli-guide {
+  background-color: var(--hli-color);
   pointer-events: none;
-  background-image: var(--hli-bgs);
-  background-position: var(--hli-pos);
-  background-repeat: no-repeat;
-  background-size: var(--hli-w) 100%;
 }
 
 /* ----- 加大標題差異 ----- */

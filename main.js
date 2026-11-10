@@ -2,7 +2,7 @@
 
 const obsidian = require('obsidian');
 const { Plugin, PluginSettingTab, Setting } = obsidian;
-const { ViewPlugin, Decoration } = require('@codemirror/view');
+const { ViewPlugin, Decoration, layer, RectangleMarker } = require('@codemirror/view');
 const { RangeSetBuilder } = require('@codemirror/state');
 
 // 設定頁面文字：Obsidian 介面是繁體中文時顯示中文，其他語言顯示英文
@@ -115,7 +115,10 @@ function setDepthClasses(el, depth, isHeading) {
   if (depth > 0) el.classList.add(`hli-d${depth}`, isHeading ? 'hli-head' : 'hli-data');
 }
 
-/** 即時預覽 / 原始碼模式：用 CodeMirror 的 line decoration 加類別。 */
+/**
+ * 即時預覽 / 原始碼模式：用 CodeMirror 的 line decoration 加類別來縮排，
+ * 垂直參考線則畫在獨立的圖層上，表格、標題、嵌入區塊旁邊也能連續顯示。
+ */
 function livePreviewExtension(plugin) {
   const decos = {};
   for (let d = 1; d <= 6; d++) {
@@ -123,7 +126,7 @@ function livePreviewExtension(plugin) {
     decos[`${d}d`] = Decoration.line({ class: `hli-d${d} hli-data` });
   }
 
-  return ViewPlugin.fromClass(
+  const indentPlugin = ViewPlugin.fromClass(
     class {
       constructor(view) {
         this.version = plugin.version;
@@ -134,6 +137,7 @@ function livePreviewExtension(plugin) {
 
       update(u) {
         const settingsChanged = this.version !== plugin.version;
+        this.settingsChanged = settingsChanged;
         if (u.docChanged || settingsChanged) {
           this.version = plugin.version;
           this.scan = scanHeadings(u.state.doc.toString(), plugin.settings.treatHighestAsH1);
@@ -187,6 +191,63 @@ function livePreviewExtension(plugin) {
     },
     { decorations: (v) => v.decorations }
   );
+
+  const guideLayer = layer({
+    above: false,
+    class: 'hli-guide-layer',
+    update(u) {
+      const state = u.view.plugin(indentPlugin);
+      return u.docChanged || u.viewportChanged || u.geometryChanged || u.heightChanged || (state && state.settingsChanged);
+    },
+    markers(view) {
+      const state = view.plugin(indentPlugin);
+      if (!state || state.scan.disabled || !plugin.settings.showGuides) return [];
+      return guideMarkers(view, state.scan, plugin.settings.indents);
+    },
+  });
+
+  return [indentPlugin, guideLayer];
+}
+
+/**
+ * 每個標題的段落（到下一個同級或更高一級的標題為止）畫一條直線，
+ * 位置在該層內文左邊 --hli-gap 的地方。只畫目前看得到的範圍。
+ */
+function guideMarkers(view, scan, indents) {
+  const { headings } = scan;
+  const doc = view.state.doc;
+  const style = getComputedStyle(view.contentDOM);
+  const gap = parseFloat(style.getPropertyValue('--hli-gap')) || 12;
+  const width = parseFloat(style.getPropertyValue('--hli-w')) || 1;
+
+  const scrollRect = view.scrollDOM.getBoundingClientRect();
+  const baseLeft = scrollRect.left - view.scrollDOM.scrollLeft;
+  const baseTop = scrollRect.top - view.scrollDOM.scrollTop;
+  const left0 = view.contentDOM.getBoundingClientRect().left + parseFloat(style.paddingLeft) - baseLeft;
+  const top0 = view.documentTop - baseTop;
+  const { from: vpFrom, to: vpTo } = view.viewport;
+
+  const markers = [];
+  for (let i = 0; i < headings.length; i++) {
+    const { line, level } = headings[i];
+    if (level < 1 || level > 6) continue;
+    let end = doc.lines - 1;
+    for (let j = i + 1; j < headings.length; j++) {
+      if (headings[j].level <= level) {
+        end = headings[j].line - 1;
+        break;
+      }
+    }
+    if (end <= line) continue;
+    const from = Math.max(doc.line(line + 2).from, vpFrom);
+    const to = Math.min(doc.line(end + 1).to, vpTo);
+    if (from > to) continue;
+    const top = view.lineBlockAt(from).top;
+    const bottom = view.lineBlockAt(to).bottom;
+    const x = left0 + indents[level - 1] - gap;
+    markers.push(new RectangleMarker('hli-guide', x, top0 + top, width, bottom - top));
+  }
+  return markers;
 }
 
 module.exports = class HeadingIndentGuides extends Plugin {
