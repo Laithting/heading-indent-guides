@@ -378,6 +378,8 @@ function guideMarkers(view, scan, indents) {
       }
     }
     if (end <= line) continue;
+    // 段落被折疊時，內容會併進標題那一行；這時不畫線，免得線壓在標題上
+    if (view.lineBlockAt(doc.line(line + 2).from).from <= doc.line(line + 1).from) continue;
     const from = Math.max(doc.line(line + 2).from, vpFrom);
     const to = Math.min(doc.line(end + 1).to, vpTo);
     if (from > to) continue;
