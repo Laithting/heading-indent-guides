@@ -32,8 +32,9 @@ const STRINGS = {
 };
 
 function strings() {
-  const lang = typeof obsidian.getLanguage === 'function' ? obsidian.getLanguage() : window.localStorage.getItem('language');
-  return STRINGS[lang] || STRINGS.en;
+  // 舊版 Obsidian 沒有 getLanguage，改看 moment 的語系（Obsidian 會跟介面語言同步）
+  const lang = typeof obsidian.getLanguage === 'function' ? obsidian.getLanguage() : obsidian.moment.locale();
+  return String(lang).toLowerCase() === 'zh-tw' ? STRINGS['zh-TW'] : STRINGS.en;
 }
 
 const DEFAULT_SETTINGS = {
