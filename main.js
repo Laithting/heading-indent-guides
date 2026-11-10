@@ -5,9 +5,14 @@ const { Plugin, PluginSettingTab, Setting } = obsidian;
 const { ViewPlugin, Decoration, layer, RectangleMarker } = require('@codemirror/view');
 const { RangeSetBuilder } = require('@codemirror/state');
 
-// 設定頁面文字：Obsidian 介面是繁體中文時顯示中文，其他語言顯示英文
+// 設定頁面文字。預設跟著 Obsidian 的介面語言，沒有翻譯的語言顯示英文。
+// key 用小寫，對應 Obsidian 的語言代碼（getLanguage() 或 moment 語系）。
 const STRINGS = {
   en: {
+    name: 'English',
+    language: 'Settings language',
+    languageDesc: 'Language of this settings page. Auto follows the Obsidian interface language.',
+    auto: 'Auto',
     guides: 'Vertical guide lines',
     guidesDesc: 'Draw a vertical line to the left of the content under each heading level.',
     headings: 'Clearer headings',
@@ -18,7 +23,11 @@ const STRINGS = {
     under: (n) => `Content under H${n}`,
     perNote: 'To turn indentation off for one note, add heading-indent: false to its frontmatter.',
   },
-  'zh-TW': {
+  'zh-tw': {
+    name: '繁體中文',
+    language: '設定頁面語言',
+    languageDesc: '這個設定頁面的語言。「自動」會跟著 Obsidian 的介面語言。',
+    auto: '自動',
     guides: '垂直參考線',
     guidesDesc: '在每一層標題底下的內文左邊畫直線。',
     headings: '加大標題差異',
@@ -29,12 +38,140 @@ const STRINGS = {
     under: (n) => `H${n} 底下的內文`,
     perNote: '單篇筆記想關掉縮排：在 frontmatter 加上 heading-indent: false。',
   },
+  zh: {
+    name: '简体中文',
+    language: '设置页面语言',
+    languageDesc: '此设置页面的语言。“自动”会跟随 Obsidian 的界面语言。',
+    auto: '自动',
+    guides: '垂直参考线',
+    guidesDesc: '在每一级标题下方内容的左侧画一条竖线。',
+    headings: '加大标题差异',
+    headingsDesc: '加大各级标题的字号和粗细差异，并在 H1 下方加下划线。',
+    highest: '把最高级标题当作 H1',
+    highestDesc: '例如笔记最高只用到 ##，就把 ## 当作第一级，不会多缩进一级。',
+    indents: '各级缩进（px）',
+    under: (n) => `H${n} 下方的内容`,
+    perNote: '要关闭单篇笔记的缩进：在 frontmatter 中加入 heading-indent: false。',
+  },
+  ja: {
+    name: '日本語',
+    language: '設定画面の言語',
+    languageDesc: 'この設定画面の言語です。「自動」は Obsidian の表示言語に合わせます。',
+    auto: '自動',
+    guides: '縦のガイド線',
+    guidesDesc: '各見出しレベルの本文の左側に縦線を表示します。',
+    headings: '見出しを見分けやすくする',
+    headingsDesc: '見出しの文字サイズと太さの差を大きくし、H1 に下線を引きます。',
+    highest: '最上位の見出しを H1 として扱う',
+    highestDesc: 'ノートで ## 以下しか使っていない場合、## を第 1 レベルとして扱い、余分にインデントしません。',
+    indents: 'レベルごとのインデント（px）',
+    under: (n) => `H${n} の下の本文`,
+    perNote: '特定のノートでインデントを無効にするには、frontmatter に heading-indent: false を追加します。',
+  },
+  ko: {
+    name: '한국어',
+    language: '설정 화면 언어',
+    languageDesc: '이 설정 화면의 언어입니다. "자동"은 Obsidian 인터페이스 언어를 따릅니다.',
+    auto: '자동',
+    guides: '세로 안내선',
+    guidesDesc: '각 제목 수준 아래 내용의 왼쪽에 세로선을 표시합니다.',
+    headings: '제목 구분 강화',
+    headingsDesc: '제목의 글자 크기와 굵기 차이를 키우고 H1에 밑줄을 긋습니다.',
+    highest: '가장 높은 제목을 H1로 취급',
+    highestDesc: '노트에서 ## 이하만 사용하면 ##을 첫 번째 수준으로 취급해 한 단계 더 들여쓰지 않습니다.',
+    indents: '수준별 들여쓰기(px)',
+    under: (n) => `H${n} 아래 내용`,
+    perNote: '특정 노트에서 들여쓰기를 끄려면 frontmatter에 heading-indent: false를 추가하세요.',
+  },
+  es: {
+    name: 'Español',
+    language: 'Idioma de la configuración',
+    languageDesc: 'Idioma de esta página de configuración. Automático sigue el idioma de la interfaz de Obsidian.',
+    auto: 'Automático',
+    guides: 'Líneas guía verticales',
+    guidesDesc: 'Dibuja una línea vertical a la izquierda del contenido de cada nivel de encabezado.',
+    headings: 'Encabezados más claros',
+    headingsDesc: 'Aumenta la diferencia de tamaño y grosor entre encabezados y subraya el H1.',
+    highest: 'Tratar el encabezado más alto como H1',
+    highestDesc: 'Si una nota solo usa ## o niveles inferiores, ## pasa a ser el primer nivel y nada se sangra de más.',
+    indents: 'Sangría por nivel (px)',
+    under: (n) => `Contenido bajo H${n}`,
+    perNote: 'Para desactivar la sangría en una nota, añade heading-indent: false a su frontmatter.',
+  },
+  fr: {
+    name: 'Français',
+    language: 'Langue des paramètres',
+    languageDesc: 'Langue de cette page de paramètres. Automatique suit la langue de l’interface d’Obsidian.',
+    auto: 'Automatique',
+    guides: 'Lignes guides verticales',
+    guidesDesc: 'Trace une ligne verticale à gauche du contenu de chaque niveau de titre.',
+    headings: 'Titres plus distincts',
+    headingsDesc: 'Accentue les différences de taille et de graisse entre les titres et souligne le H1.',
+    highest: 'Traiter le titre le plus haut comme H1',
+    highestDesc: 'Si une note n’utilise que ## et les niveaux inférieurs, ## devient le premier niveau, sans retrait supplémentaire.',
+    indents: 'Retrait par niveau (px)',
+    under: (n) => `Contenu sous H${n}`,
+    perNote: 'Pour désactiver le retrait dans une note, ajoutez heading-indent: false à son frontmatter.',
+  },
+  de: {
+    name: 'Deutsch',
+    language: 'Sprache der Einstellungen',
+    languageDesc: 'Sprache dieser Einstellungsseite. Automatisch folgt der Sprache der Obsidian-Oberfläche.',
+    auto: 'Automatisch',
+    guides: 'Vertikale Hilfslinien',
+    guidesDesc: 'Zeichnet links neben dem Inhalt jeder Überschriftenebene eine senkrechte Linie.',
+    headings: 'Deutlichere Überschriften',
+    headingsDesc: 'Vergrößert die Unterschiede in Schriftgröße und -stärke zwischen Überschriften und unterstreicht H1.',
+    highest: 'Höchste Überschrift als H1 behandeln',
+    highestDesc: 'Verwendet eine Notiz nur ## und tiefer, wird ## zur ersten Ebene, sodass nichts zusätzlich eingerückt wird.',
+    indents: 'Einzug pro Ebene (px)',
+    under: (n) => `Inhalt unter H${n}`,
+    perNote: 'Um den Einzug für eine Notiz auszuschalten, füge heading-indent: false zu ihrem Frontmatter hinzu.',
+  },
+  'pt-br': {
+    name: 'Português (Brasil)',
+    language: 'Idioma das configurações',
+    languageDesc: 'Idioma desta página de configurações. Automático segue o idioma da interface do Obsidian.',
+    auto: 'Automático',
+    guides: 'Linhas-guia verticais',
+    guidesDesc: 'Desenha uma linha vertical à esquerda do conteúdo de cada nível de título.',
+    headings: 'Títulos mais distintos',
+    headingsDesc: 'Aumenta a diferença de tamanho e peso entre os títulos e sublinha o H1.',
+    highest: 'Tratar o título mais alto como H1',
+    highestDesc: 'Se uma nota usa apenas ## ou níveis abaixo, ## vira o primeiro nível e nada recebe recuo extra.',
+    indents: 'Recuo por nível (px)',
+    under: (n) => `Conteúdo sob H${n}`,
+    perNote: 'Para desativar o recuo em uma nota, adicione heading-indent: false ao frontmatter dela.',
+  },
+  ru: {
+    name: 'Русский',
+    language: 'Язык настроек',
+    languageDesc: 'Язык этой страницы настроек. «Автоматически» — как в интерфейсе Obsidian.',
+    auto: 'Автоматически',
+    guides: 'Вертикальные направляющие',
+    guidesDesc: 'Рисует вертикальную линию слева от содержимого каждого уровня заголовков.',
+    headings: 'Более заметные заголовки',
+    headingsDesc: 'Увеличивает разницу в размере и насыщенности заголовков и подчёркивает H1.',
+    highest: 'Считать самый высокий заголовок H1',
+    highestDesc: 'Если в заметке используются только ## и ниже, ## становится первым уровнем, и лишнего отступа не будет.',
+    indents: 'Отступ для каждого уровня (px)',
+    under: (n) => `Содержимое под H${n}`,
+    perNote: 'Чтобы отключить отступы в одной заметке, добавьте heading-indent: false во frontmatter.',
+  },
 };
 
-function strings() {
+// moment 的語系代碼跟 Obsidian 的不完全一樣
+const LANGUAGE_ALIASES = { 'zh-cn': 'zh', 'zh-hk': 'zh-tw', pt: 'pt-br' };
+
+function interfaceLanguage() {
   // 舊版 Obsidian 沒有 getLanguage，改看 moment 的語系（Obsidian 會跟介面語言同步）
-  const lang = typeof obsidian.getLanguage === 'function' ? obsidian.getLanguage() : obsidian.moment.locale();
-  return String(lang).toLowerCase() === 'zh-tw' ? STRINGS['zh-TW'] : STRINGS.en;
+  return typeof obsidian.getLanguage === 'function' ? obsidian.getLanguage() : obsidian.moment.locale();
+}
+
+function strings(choice) {
+  let lang = String(choice && choice !== 'auto' ? choice : interfaceLanguage()).toLowerCase();
+  lang = LANGUAGE_ALIASES[lang] || lang;
+  return STRINGS[lang] || STRINGS[lang.split('-')[0]] || STRINGS.en;
 }
 
 const DEFAULT_SETTINGS = {
@@ -42,6 +179,7 @@ const DEFAULT_SETTINGS = {
   treatHighestAsH1: true,              // 把筆記裡最大的標題當成 H1
   showGuides: true,                    // 垂直參考線
   styleHeadings: true,                 // 加大各級標題的大小、粗細差異
+  language: 'auto',                    // 設定頁面語言
 };
 
 const DEPTH_CLASSES = ['hli-d1', 'hli-d2', 'hli-d3', 'hli-d4', 'hli-d5', 'hli-d6', 'hli-head', 'hli-data'];
@@ -319,7 +457,20 @@ class HeadingIndentGuidesSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     const s = this.plugin.settings;
     containerEl.empty();
-    const str = strings();
+    const str = strings(s.language);
+
+    new Setting(containerEl)
+      .setName(str.language)
+      .setDesc(str.languageDesc)
+      .addDropdown((d) => {
+        d.addOption('auto', str.auto);
+        for (const [code, t] of Object.entries(STRINGS)) d.addOption(code, t.name);
+        d.setValue(s.language).onChange(async (v) => {
+          s.language = v;
+          await this.plugin.saveData(s);
+          this.display();
+        });
+      });
 
     new Setting(containerEl)
       .setName(str.guides)

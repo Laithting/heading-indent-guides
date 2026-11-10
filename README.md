@@ -24,10 +24,13 @@ If you also use *Heading Level Indent*, turn it off so content is not indented t
 
 | Setting | What it does |
 |---|---|
+| Settings language | Language of the settings page. **Auto** follows your Obsidian interface language. |
 | Vertical guide lines | Show or hide the guide lines. |
 | Clearer headings | Turn the larger heading sizes, weights, and H1 underline on or off. |
 | Treat the highest heading as H1 | If a note only uses `##` and below, `##` becomes the first level, so nothing is indented by an extra step. |
 | Indent per level | How far (in px) content under H1–H6 moves to the right. The guide lines follow automatically. |
+
+The settings page is available in English, 繁體中文, 简体中文, 日本語, 한국어, Español, Français, Deutsch, Português (Brasil), and Русский. Other interface languages show English.
 
 To turn indentation off for a single note, add this to its frontmatter:
 
@@ -57,7 +60,7 @@ body.hli-guides {
 
 **安裝**：設定 → 第三方外掛 → 瀏覽 → 搜尋 **Heading Indent Guides** → 安裝 → 啟用。如果有裝 *Heading Level Indent*，請先關掉，不然會重複縮排。
 
-**設定**：可以開關垂直參考線、開關加大標題差異、選擇是否把筆記中最大的標題當成 H1，以及調整 H1～H6 底下內容的縮排距離，參考線會自動跟著移動。Obsidian 介面是中文時，設定頁面也會顯示中文。
+**設定**：可以開關垂直參考線、開關加大標題差異、選擇是否把筆記中最大的標題當成 H1，以及調整 H1～H6 底下內容的縮排距離，參考線會自動跟著移動。設定頁面支援 10 種語言，預設跟著 Obsidian 的介面語言，也可以在「設定頁面語言」自己選。
 
 **單篇筆記關閉縮排**：在 frontmatter 加上 `heading-indent: false`。
 
